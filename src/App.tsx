@@ -1,9 +1,10 @@
+import NewsPage from "./page/NewsPage"
 
 function App() {
   return (
-    <div>
-      dfn
-    </div>
+    <>
+      <NewsPage />
+    </>
   )
 }
 
