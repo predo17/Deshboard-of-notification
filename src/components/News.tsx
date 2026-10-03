@@ -1,6 +1,6 @@
 import { useNewsStore } from "@/store/ZustandNews";
 import { useEffect } from "react";
-import { IoGlobeOutline } from "react-icons/io5";
+import { GoGlobe } from "react-icons/go";
 
 export default function News() {
   const { news, getNews, status, error } = useNewsStore();
@@ -14,56 +14,42 @@ export default function News() {
   if (error) return <div>{error}</div>;
 
   return (
-    <ul>
+    <div className="flex flex-col w-full max-w-4xl gap-5">
       {articles.map((n) => (
-        <li key={n.article_id}>
-          <div className="relative flex items-center gap-4 mb-4.5 py-4 px-3.5 border border-[#64d8f7] rounded-lg">
-            <div className="flex items-center">
-              <span className="absolute top-3 right-3 border w-22 h-8.5 flex items-center justify-center text-[#02beed] font-medium span-shape oxanium">
-                news
-              </span>
+        <div
+          key={n.article_id}
+          className="flex gap-4 p-2 bg-white rounded-md shadow-md"
+        >
+          <div className="w-full max-w-60 h-50 ">
+            <img
+              src={n.image_url}
+              alt={n.title}
+              className="w-full h-full object-cover rounded-md"
+            />
+          </div>
 
-              <div className="flex gap-9 items-center">
-                <div className="h-50 w-90 border border-[#a5b3c1]">
-                  <img
-                    src={n.image_url || ""}
-                    alt=""
-                    className="h-full w-full "
-                  />
-                </div>
-                <div className="w-full">
-                  <div className="w-[95%] border-b border-[#a5b3c1] mt-2">
-                    <h2 className="font-bold mb-2 oxanium max-w-90">
-                      {" "}
-                      {n.title}
-                    </h2>
-                    <p className=" line-clamp-3 mb-4.5 font-light text-sm segoeui text-[#a5b3c1]">
-                      {n.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between gap-1.5 mt-4 pr-2">
-                    <div className="flex items-center gap-1.5">
-                      <div className="p-1.25 border border-[#64d7f798] rounded">
-                        <IoGlobeOutline size={20} />
-                      </div>
-                      <h3 className="md:text-[15px]">{n.source_name || ""} </h3>
-                    </div>
-                    <div className=" border border-[#64d7f798] p-1.5 source-icon-shape">
-                      <div className="h-8.5 w-8.5">
-                        <img
-                          src={n.source_icon || ""}
-                          alt=""
-                          className="h-full w-full rounded-full"
-                        ></img>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <div className="flex flex-col flex-1 gap-2">
+            <div className="flex flex-1 flex-col gap-2 pr-8">
+              <h2 className="font-bold text-[1.1rem]">{n.title}</h2>
+              <p className="text-[1rem] line-clamp-4 ">{n.description}</p>
+            </div>
+
+            <div className="flex items-center justify-between ">
+              <div className="flex items-center gap-2">
+                <GoGlobe />
+                <p className="text-sm">{n.source_name}</p>
+              </div>
+              <div className="w-8 h-8">
+                <img
+                  src={n.source_icon}
+                  alt={n.source_name}
+                  className="w-full h-full rounded-full"
+                />
               </div>
             </div>
           </div>
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }

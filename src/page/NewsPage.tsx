@@ -1,9 +1,9 @@
-import News from '@/components/News'
+import News from "@/components/News";
 
 export default function NewsPage() {
   return (
-    <div>
+    <div className="flex justify-center items-center h-full py-20">
       <News />
     </div>
-  )
+  );
 }

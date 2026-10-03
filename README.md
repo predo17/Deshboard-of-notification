@@ -5,12 +5,13 @@ Projeto criado com Vite, React, TypeScript e Zustand. A aplicação consulta a A
 ## Como o fluxo funciona
 
 1. O componente `NewsPage` renderiza o componente `News`.
-2. Quando `News` é montado, o `useEffect` chama `getNews` se ainda não houver notícias carregadas.
+2. Quando `News` é montado, o `useEffect` chama `getNews` somente se ainda não houver notícias carregadas.
 3. `getNews`, localizado no store do Zustand, faz uma requisição `fetch` para a URL definida em `VITE_NEWS_URL`.
 4. Enquanto a requisição está em andamento, o estado `status` recebe o valor `loading` e a tela mostra `Carregando...`.
 5. Se a resposta for bem-sucedida, os itens de `data.results` são armazenados em `news` e o status passa para `success`.
 6. Se a API responder com erro ou em um formato inválido, o status passa para `error` e a mensagem é exibida na tela.
-7. Com os dados carregados, `News` percorre o array de artigos e renderiza título, descrição, imagem, fonte e ícone da fonte.
+7. O middleware `persist` do Zustand salva o estado do store no armazenamento local do navegador. Assim, ao atualizar a página, as notícias já carregadas são recuperadas sem uma nova chamada à API. Como a API gratuita tem limite de requisições, esse cache ajuda a evitar chamadas desnecessárias. Uma nova chamada ocorre quando não há notícias armazenadas.
+8. Com os dados carregados, `News` percorre o array de artigos e renderiza título, descrição, imagem, fonte e ícone da fonte.
 
 ## Estrutura dos arquivos documentados
 
@@ -22,6 +23,7 @@ Define a interface `Article`, que descreve o formato esperado para cada notícia
 - `title`: título da notícia.
 - `description`: descrição ou resumo.
 - `image_url`: endereço da imagem principal.
+- `pubDate`: data de publicação.
 - `link`: endereço da notícia original.
 - `source_name`: nome da fonte da notícia.
 - `source_icon`: endereço do ícone da fonte.
@@ -30,7 +32,7 @@ Essa tipagem ajuda o TypeScript a identificar propriedades inválidas durante o 
 
 ### `src/store/ZustandNews.ts`
 
-Centraliza os dados e o estado da requisição usando Zustand.
+Centraliza os dados e o estado da requisição usando Zustand. O middleware `persist`, configurado com o nome `news-storage`, mantém o estado do store no armazenamento local do navegador entre atualizações da página. Isso permite reutilizar as notícias já carregadas e reduzir o consumo da cota gratuita da API.
 
 O tipo `NewsState` define:
 
@@ -46,21 +48,21 @@ Antes da chamada, o store limpa o erro anterior e define `status` como `loading`
 
 Quando ocorre uma exceção, o `catch` limpa as notícias, define `status` como `error` e salva uma mensagem compreensível em `error`.
 
+O store usa o armazenamento padrão do middleware `persist` (localStorage no navegador). A função de busca não é persistida; somente os dados do estado são armazenados. Se não houver notícias no cache, o componente solicita os dados à API.
+
 ### `src/components/News.tsx`
 
 É o componente responsável por buscar e apresentar as notícias.
 
-O `useNewsStore` fornece `news`, `getNews`, `status` e `error`. O `useEffect` executa a busca quando a lista está vazia. A interface possui três estados principais:
+O `useNewsStore` fornece `news`, `getNews`, `status` e `error`. O componente garante que `news` seja tratado como uma lista e o `useEffect` executa a busca quando ela está vazia. A interface possui três estados principais:
 
 - `loading`: mostra o texto de carregamento.
 - `error`: mostra a mensagem retornada pelo store.
-- sucesso: lista os artigos dentro de elementos `<li>`.
-
-Os valores opcionais das imagens usam `|| ""` para evitar que uma URL ausente seja enviada diretamente ao atributo `src`.
+- sucesso: apresenta cada artigo em um cartão com imagem, título, descrição e informações da fonte.
 
 ### `src/page/NewsPage.tsx`
 
-Funciona como uma página simples da aplicação e encapsula o componente `News`. Essa separação permite que a página receba futuramente outros componentes, filtros ou controles sem concentrar tudo em um único arquivo.
+Funciona como uma página simples da aplicação e encapsula o componente `News`, centralizando o conteúdo na tela. Essa separação permite que a página receba futuramente outros componentes, filtros ou controles sem concentrar tudo em um único arquivo.
 
 ## Configuração da API
 
