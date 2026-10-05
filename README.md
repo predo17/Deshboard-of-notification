@@ -50,6 +50,16 @@ Quando ocorre uma exceção, o `catch` limpa as notícias, define `status` como 
 
 O store usa o armazenamento padrão do middleware `persist` (localStorage no navegador). A função de busca não é persistida; somente os dados do estado são armazenados. Se não houver notícias no cache, o componente solicita os dados à API.
 
+Antes de persistir as notícias no estado do Zustand, o store valida os itens recebidos pela API para garantir que apenas registros com conteúdo útil sejam exibidos na interface. A lógica filtra as notícias que possuem uma description válida, evitando itens vazios ou inconsistentes:
+
+`src/store/ZustandNews.ts:36-40`
+
+Em seguida, a lista filtrada é salva no estado:
+
+Essa validação é importante porque a API pode devolver artigos incompletos ou sem texto suficiente para renderização. Com isso, a interface fica mais robusta e evita que notícias sem conteúdo sejam exibidas na tela, melhorando a qualidade da experiência do usuário.
+
+`scr/storeustandNews.ts:41-44`
+
 ### `src/components/News.tsx`
 
 É o componente responsável por buscar e apresentar as notícias.

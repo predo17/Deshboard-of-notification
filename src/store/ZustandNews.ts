@@ -12,45 +12,50 @@ type NewsState = {
 export const useNewsStore = create<NewsState>()(
   persist(
     (set) => ({
-  news: [],
-  status: "idle",
-  error: null,
-  getNews: async () => {
-    set({
-      status: "loading",
+      news: [],
+      status: "idle",
       error: null,
-    });
-    try {
-      const response = await fetch(import.meta.env.VITE_NEWS_URL);
-      const data = await response.json();
+      getNews: async () => {
+        set({
+          status: "loading",
+          error: null,
+        });
+        try {
+          const response = await fetch(import.meta.env.VITE_NEWS_URL);
+          const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          data?.message || `A API retornou o erro ${response.status}`,
-        );
-      }
+          if (!response.ok) {
+            throw new Error(
+              data?.message || `A API retornou o erro ${response.status}`,
+            );
+          }
 
-      if (!Array.isArray(data?.results)) {
-        throw new Error("A API retornou notícias em um formato inválido");
-      }
-
-      set({
-        news: data.results,
-        status: "success",
-      });
-    } catch (err) {
-      set({
-        news: [],
-        status: "error",
-        error:
-          err instanceof Error
-            ? err.message
-            : "Ops, não conseguimos carregar as notícias",
-      });
-    }
-  },
-}),
-{
-  name: "news-storage",
-}
-  ));
+          if (!Array.isArray(data?.results)) {
+            throw new Error("A API retornou notícias em um formato inválido");
+          }
+          const validNews = data.results.filter(
+            (item: Article) =>
+              typeof item.description === "string" &&
+              item.description.trim() !== "",
+          );
+          set({
+            news: validNews,
+            status: "success",
+          });
+        } catch (err) {
+          set({
+            news: [],
+            status: "error",
+            error:
+              err instanceof Error
+                ? err.message
+                : "Ops, não conseguimos carregar as notícias",
+          });
+        }
+      },
+    }),
+    {
+      name: "news-storage",
+    },
+  ),
+);
