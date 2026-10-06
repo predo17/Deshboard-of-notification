@@ -1,6 +1,7 @@
 import { useNewsStore } from "@/store/ZustandNews";
 import { useEffect } from "react";
 import { GoGlobe } from "react-icons/go";
+import { Link } from "react-router-dom";
 
 export default function News() {
   const { news, getNews, status, error } = useNewsStore();
@@ -16,16 +17,24 @@ export default function News() {
   return (
     <div className="flex flex-col w-full max-w-4xl gap-5">
       {articles.map((n) => (
-        <div
+        <Link
+          to={`/details/${encodeURIComponent(n.title)}`}
+          aria-label={`Abrir noticia ${n.title}`}
           key={n.article_id}
           className="flex gap-4 p-2 bg-white rounded-md shadow-md"
         >
           <div className="w-full max-w-60 h-50 ">
-            <img
-              src={n.image_url}
-              alt={n.title}
-              className="w-full h-full object-cover rounded-md"
-            />
+            {n.image_url && (
+              <img
+                src={n.image_url}
+                alt={n.title}
+                className="w-full h-full object-cover rounded-md"
+              />
+            )}
+
+            {!n.image_url && (
+              <div className="w-full h-full bg-gray-200 rounded-md" />
+            )}
           </div>
 
           <div className="flex flex-col flex-1 gap-2">
@@ -39,16 +48,18 @@ export default function News() {
                 <GoGlobe />
                 <p className="text-sm">{n.source_name}</p>
               </div>
-              <div className="w-8 h-8">
-                <img
-                  src={n.source_icon}
-                  alt={n.source_name}
-                  className="w-full h-full rounded-full"
-                />
-              </div>
+              {n.source_icon && (
+                <div className="w-8 h-8">
+                  <img
+                    src={n.source_icon}
+                    alt={n.source_name}
+                    className="w-full h-full rounded-full"
+                  />
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

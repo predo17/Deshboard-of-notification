@@ -2,6 +2,14 @@
 
 Projeto criado com Vite, React, TypeScript e Zustand. A aplicação consulta a API da NewsData.io e exibe as notícias recebidas na tela.
 
+## O que foi feito de novo
+
+A principal novidade desse projeto foi transformar o dashboard em uma experiência mais completa de leitura de notícias. Além da listagem inicial dos artigos, foi adicionado um fluxo de navegação para a página de detalhes de cada notícia, permitindo abrir um item específico e visualizar o conteúdo completo com imagem, fonte, data de publicação e descrição.
+
+Também foi implementado um controle de estado mais robusto com Zustand, incluindo carregamento, erros de API e cache local via `persist`, para evitar chamadas repetidas à NewsData.io e manter as notícias já carregadas mesmo ao recarregar a página. A interface foi organizada em cards clicáveis, com navegação por rotas e uma leitura mais confortável para o usuário.
+
+Esses ajustes deixam o app mais funcional, visualmente mais completo e melhor preparado para uso em produção, com comportamento mais estável e uma experiência de consulta de notícias mais fluida.
+
 ## Como o fluxo funciona
 
 1. O componente `NewsPage` renderiza o componente `News`.
