@@ -69,6 +69,15 @@ export default function DetailsNews({ title }: props) {
         <p className="text-base sm:text-lg leading-relaxed font-normal">
           {preview?.description}
         </p>
+
+        <a
+          href={preview?.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex justify-start text-sm font-medium bg-blue-500 text-white px-4 py-2 rounded-md w-fit hover:bg-blue-600"
+        >
+          Leia mais
+        </a>
       </article>
     </section>
   );

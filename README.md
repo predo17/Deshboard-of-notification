@@ -1,120 +1,76 @@
-## Dashboard de notificações
+## Dashboard de notícias
 
-Projeto criado com Vite, React, TypeScript e Zustand. A aplicação consulta a API da NewsData.io e exibe as notícias recebidas na tela.
+Aplicação criada com Vite, React, TypeScript e Zustand para consultar e apresentar notícias da NewsData.io. A interface inclui um cabeçalho com menu lateral, uma lista de notícias e uma página para visualizar os detalhes de um artigo.
 
-## O que foi feito de novo
+## Arquivos documentados
 
-A principal novidade desse projeto foi transformar o dashboard em uma experiência mais completa de leitura de notícias. Além da listagem inicial dos artigos, foi adicionado um fluxo de navegação para a página de detalhes de cada notícia, permitindo abrir um item específico e visualizar o conteúdo completo com imagem, fonte, data de publicação e descrição.
+### `src/App.tsx`
 
-Também foi implementado um controle de estado mais robusto com Zustand, incluindo carregamento, erros de API e cache local via `persist`, para evitar chamadas repetidas à NewsData.io e manter as notícias já carregadas mesmo ao recarregar a página. A interface foi organizada em cards clicáveis, com navegação por rotas e uma leitura mais confortável para o usuário.
+É o componente principal da aplicação. Ele configura as rotas com React Router, exibe o cabeçalho e o menu lateral e controla se a barra lateral está aberta. Quando a localização da rota muda, a página volta ao topo.
 
-Esses ajustes deixam o app mais funcional, visualmente mais completo e melhor preparado para uso em produção, com comportamento mais estável e uma experiência de consulta de notícias mais fluida.
+As rotas configuradas são:
 
-## Como o fluxo funciona
+- `/`: exibe a página principal de notícias.
+- `/details/:title`: exibe a página de detalhes de uma notícia, usando o título como parâmetro.
 
-1. O componente `NewsPage` renderiza o componente `News`.
-2. Quando `News` é montado, o `useEffect` chama `getNews` somente se ainda não houver notícias carregadas.
-3. `getNews`, localizado no store do Zustand, faz uma requisição `fetch` para a URL definida em `VITE_NEWS_URL`.
-4. Enquanto a requisição está em andamento, o estado `status` recebe o valor `loading` e a tela mostra `Carregando...`.
-5. Se a resposta for bem-sucedida, os itens de `data.results` são armazenados em `news` e o status passa para `success`.
-6. Se a API responder com erro ou em um formato inválido, o status passa para `error` e a mensagem é exibida na tela.
-7. O middleware `persist` do Zustand salva o estado do store no armazenamento local do navegador. Assim, ao atualizar a página, as notícias já carregadas são recuperadas sem uma nova chamada à API. Como a API gratuita tem limite de requisições, esse cache ajuda a evitar chamadas desnecessárias. Uma nova chamada ocorre quando não há notícias armazenadas.
-8. Com os dados carregados, `News` percorre o array de artigos e renderiza título, descrição, imagem, fonte e ícone da fonte.
+### `src/layout/Header.tsx`
 
-## Estrutura dos arquivos documentados
+Renderiza o cabeçalho superior da aplicação. Ele recebe a função `toggleSidebar` e a repassa ao botão de menu, permitindo abrir ou fechar a barra lateral. Também utiliza o componente `MenuButton` para apresentar o ícone e o nome da aplicação.
 
-### `src/types/ArticleType.ts`
+### `src/components/Sidebar.tsx`
 
-Define a interface `Article`, que descreve o formato esperado para cada notícia recebida:
+Renderiza o menu lateral que aparece sobre a página. Recebe as propriedades `isSidebarOpen` e `toggleSidebar` para controlar sua visibilidade. Quando o menu está aberto, bloqueia a rolagem do conteúdo de fundo; ao fechar ou desmontar o componente, remove esse bloqueio.
 
-- `article_id`: identificador do artigo, usado também como chave do elemento React.
-- `title`: título da notícia.
-- `description`: descrição ou resumo.
-- `image_url`: endereço da imagem principal.
-- `pubDate`: data de publicação.
-- `link`: endereço da notícia original.
-- `source_name`: nome da fonte da notícia.
-- `source_icon`: endereço do ícone da fonte.
+O menu pode ser fechado pelo botão ou clicando na camada escura ao redor. As opções de categorias são geradas a partir da lista exportada por `src/utils/filter.ts` e apontam para endereços no formato `/filter/:categoria`.
 
-Essa tipagem ajuda o TypeScript a identificar propriedades inválidas durante o desenvolvimento.
+> **Observação:** no momento, `src/App.tsx` ainda não declara uma rota `/filter/:categoria`. As opções aparecem no menu, mas é necessário implementar essa rota para que a navegação por categoria exiba resultados filtrados.
 
-### `src/store/ZustandNews.ts`
+### `src/utils/Help.tsx`
 
-Centraliza os dados e o estado da requisição usando Zustand. O middleware `persist`, configurado com o nome `news-storage`, mantém o estado do store no armazenamento local do navegador entre atualizações da página. Isso permite reutilizar as notícias já carregadas e reduzir o consumo da cota gratuita da API.
+Define e exporta o componente `MenuButton`, reutilizado no cabeçalho e na barra lateral. Ele recebe uma função para alternar a exibição do menu e uma propriedade opcional para personalizar as classes visuais. O componente mostra o ícone de menu e o link com o nome “News Screen”.
 
-O tipo `NewsState` define:
+### `src/components/DetailsNews.tsx`
 
-- `news`: lista de artigos carregados.
-- `getNews`: função assíncrona responsável pela chamada à API.
-- `status`: situação atual da requisição (`idle`, `loading`, `success` ou `error`).
-- `error`: mensagem do erro, quando a requisição falha, ou `null` quando não há erro.
+Apresenta os detalhes de uma notícia. Recebe o título pela propriedade `title`, procura no store do Zustand o artigo correspondente e mostra uma mensagem caso não o encontre.
 
-Antes da chamada, o store limpa o erro anterior e define `status` como `loading`. Depois, valida dois pontos da resposta:
+Quando o artigo existe, a página exibe a fonte, o ícone da fonte (quando disponível), o título, a data formatada em português, a imagem (ou um espaço reservado quando não há imagem), a descrição e um botão “Leia mais” que abre o artigo original em outra aba.
 
-1. `response.ok` precisa ser verdadeiro. Caso contrário, uma mensagem com o status HTTP é gerada, como `A API retornou o erro 401`.
-2. `data.results` precisa ser um array. Isso evita que a aplicação tente renderizar uma estrutura inesperada.
+### `src/utils/filter.ts`
 
-Quando ocorre uma exceção, o `catch` limpa as notícias, define `status` como `error` e salva uma mensagem compreensível em `error`.
+Exporta `filter_news`, uma lista de categorias usada pelo `Sidebar` para montar as opções do menu: Política, Tecnologia, Esportes, Cultura, Entretenimento, Economia e Saúde. A lista centraliza os nomes das categorias em um único lugar.
 
-O store usa o armazenamento padrão do middleware `persist` (localStorage no navegador). A função de busca não é persistida; somente os dados do estado são armazenados. Se não houver notícias no cache, o componente solicita os dados à API.
+## Fluxo da interface
 
-Antes de persistir as notícias no estado do Zustand, o store valida os itens recebidos pela API para garantir que apenas registros com conteúdo útil sejam exibidos na interface. A lógica filtra as notícias que possuem uma description válida, evitando itens vazios ou inconsistentes:
-
-`src/store/ZustandNews.ts:36-40`
-
-Em seguida, a lista filtrada é salva no estado:
-
-Essa validação é importante porque a API pode devolver artigos incompletos ou sem texto suficiente para renderização. Com isso, a interface fica mais robusta e evita que notícias sem conteúdo sejam exibidas na tela, melhorando a qualidade da experiência do usuário.
-
-`scr/storeustandNews.ts:41-44`
-
-### `src/components/News.tsx`
-
-É o componente responsável por buscar e apresentar as notícias.
-
-O `useNewsStore` fornece `news`, `getNews`, `status` e `error`. O componente garante que `news` seja tratado como uma lista e o `useEffect` executa a busca quando ela está vazia. A interface possui três estados principais:
-
-- `loading`: mostra o texto de carregamento.
-- `error`: mostra a mensagem retornada pelo store.
-- sucesso: apresenta cada artigo em um cartão com imagem, título, descrição e informações da fonte.
-
-### `src/page/NewsPage.tsx`
-
-Funciona como uma página simples da aplicação e encapsula o componente `News`, centralizando o conteúdo na tela. Essa separação permite que a página receba futuramente outros componentes, filtros ou controles sem concentrar tudo em um único arquivo.
+1. `App` monta o cabeçalho e a barra lateral e define as rotas da aplicação.
+2. O cabeçalho e a barra lateral usam `MenuButton` para abrir e fechar o menu.
+3. Na página inicial, a lista de notícias é carregada pelo store do Zustand e apresentada ao usuário.
+4. Ao acessar a rota de detalhes de um artigo, `DetailsNews` localiza a notícia no store e apresenta suas informações.
 
 ## Configuração da API
 
-A URL é definida no arquivo `.env`:
+Defina a URL da API no arquivo `.env`:
 
 ```env
 VITE_NEWS_URL="https://newsdata.io/api/1/latest?apikey=SUA_CHAVE&country=br&language=pt"
 ```
 
-O prefixo `VITE_` permite que a variável seja lida no código do frontend através de `import.meta.env.VITE_NEWS_URL`. Depois de alterar o `.env`, é necessário reiniciar o servidor de desenvolvimento.
+O prefixo `VITE_` permite acessar essa variável no frontend por meio de `import.meta.env.VITE_NEWS_URL`. Após alterar o arquivo `.env`, reinicie o servidor de desenvolvimento.
 
-Os parâmetros usados na URL são:
-
-- `apikey`: chave de autenticação da NewsData.io.
-- `country=br`: filtra notícias do Brasil.
-- `language=pt`: filtra notícias em português.
-
-Uma resposta `401 Unauthorized` normalmente indica que a chave está ausente, inválida, expirada ou foi enviada com um parâmetro incorreto. Nesse projeto, a chave precisa estar associada ao parâmetro `apikey`.
-
-> Atenção: variáveis `VITE_*` são incorporadas ao código enviado para o navegador. Portanto, a chave ficará visível para usuários da aplicação. Para produção, o ideal é fazer a requisição em um backend ou função serverless e manter a chave somente no servidor.
+> **Atenção:** variáveis `VITE_*` são incorporadas ao código enviado ao navegador. Para produção, mantenha a chave da API em um backend ou função serverless, em vez de expô-la no frontend.
 
 ## Como executar
 
-Instale as dependências e inicie o servidor:
+Instale as dependências e inicie o servidor de desenvolvimento:
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Outros comandos disponíveis:
+Comandos adicionais:
 
 ```bash
 pnpm build   # verifica os tipos e cria o build de produção
 pnpm lint    # executa o ESLint
-pnpm preview # visualiza o build de produção localmente
+pnpm preview # visualiza localmente o build de produção
 ```
