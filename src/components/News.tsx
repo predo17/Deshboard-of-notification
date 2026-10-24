@@ -3,16 +3,20 @@ import { useEffect } from "react";
 import { GoGlobe } from "react-icons/go";
 import { Link } from "react-router-dom";
 
-export default function News() {
-  const { news, getNews, status, error } = useNewsStore();
-  const articles = Array.isArray(news) ? news : [];
+interface Props {
+  excludeArticleIds?: number[];
+}
+
+export default function News({ excludeArticleIds = [] }: Props) {
+  const { news, getNews } = useNewsStore();
+  const allArticles = Array.isArray(news) ? news : [];
+  const articles = allArticles.filter(
+    (article) => !excludeArticleIds.includes(article.article_id),
+  );
 
   useEffect(() => {
-    if (articles.length === 0) getNews();
-  }, [articles.length, getNews]);
-
-  if (status === "loading") return <div>Carregando...</div>;
-  if (error) return <div>{error}</div>;
+    if (allArticles.length === 0) getNews();
+  }, [allArticles.length, getNews]);
 
   return (
     <div className="flex flex-col w-full max-w-4xl gap-5">

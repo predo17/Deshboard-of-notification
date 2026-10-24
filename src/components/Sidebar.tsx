@@ -40,6 +40,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: props) {
         <div className="w-full flex items-center gap-2 p-4 text-black">
           <MenuButton
             toggleSidebar={toggleSidebar}
+            closeSidebar={toggleSidebar}
             className="text-[#3F72AF]"
           />
         </div>
