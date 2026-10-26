@@ -1,12 +1,49 @@
 import type { Article } from "@/types/ArticleType";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 
 type NewsState = {
   news: Article[];
   getNews: () => Promise<void>;
   status: "idle" | "loading" | "success" | "error";
   error: string | null;
+};
+
+const storageUntilMidnight: StateStorage = {
+  getItem: (name) => {
+    const serialized = localStorage.getItem(name);
+    if (serialized === null) return null;
+
+    const stored: unknown = JSON.parse(serialized);
+    if (
+      typeof stored !== "object" ||
+      stored === null ||
+      !("value" in stored) ||
+      typeof stored.value !== "string" ||
+      !("expiresAt" in stored) ||
+      typeof stored.expiresAt !== "number"
+    ) {
+      localStorage.removeItem(name);
+      return null;
+    }
+
+    if (Date.now() >= stored.expiresAt) {
+      localStorage.removeItem(name);
+      return null;
+    }
+
+    return stored.value;
+  },
+  setItem: (name, value) => {
+    const expiresAt = new Date();
+    expiresAt.setHours(24, 0, 0, 0);
+
+    localStorage.setItem(
+      name,
+      JSON.stringify({ value, expiresAt: expiresAt.getTime() }),
+    );
+  },
+  removeItem: (name) => localStorage.removeItem(name),
 };
 
 export const useNewsStore = create<NewsState>()(
@@ -56,6 +93,7 @@ export const useNewsStore = create<NewsState>()(
     }),
     {
       name: "news-storage",
+      storage: createJSONStorage(() => storageUntilMidnight),
     },
   ),
 );

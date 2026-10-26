@@ -2,14 +2,10 @@
 
 Aplicação criada com Vite, React, TypeScript e Zustand para consultar e apresentar notícias da NewsData.io. A interface inclui um cabeçalho com menu lateral, uma página inicial com notícias em destaque, uma lista de notícias e uma página para visualizar os detalhes de um artigo.
 
-### Notícias em destaque na Home
+### Armazenamento e expiração das notícias
 
-A página inicial utiliza as notícias carregadas na store Zustand. Em `src/page/HomePage.tsx`, a constante `FEATURED_ARTICLES_COUNT` define quantas notícias serão separadas para a área de destaque. Atualmente, são selecionadas as quatro primeiras notícias:
+As notícias são mantidas na store do Zustand e persistidas no `localStorage` pelo middleware `persist`, usando a chave `news-storage`. Assim, os dados continuam disponíveis depois que o usuário fecha e reabre o navegador.
 
-- A primeira é apresentada como manchete principal.
-- As outras três aparecem na seção **Em alta agora**.
-- Os `article_id` das notícias destacadas são enviados para a lista, que as exclui para evitar que os mesmos artigos apareçam duas vezes na Home.
+Junto com o estado persistido, o armazenamento personalizado grava um horário de expiração correspondente à próxima meia-noite no horário local do navegador. Quando o app é aberto, a persistência verifica esse prazo: se já tiver vencido, remove o valor salvo e a store começa sem as notícias antigas. Como o componente `News` chama `getNews` quando a lista está vazia, o app pode então buscar notícias atualizadas da API.
 
-A seleção e a exclusão usam `article_id`, em vez do título. A Home e a lista compartilham os dados da store, sem precisar manter cópias separadas das notícias ou fazer uma chamada extra à API. Para alterar a quantidade de destaques, ajuste `FEATURED_ARTICLES_COUNT` em `src/page/HomePage.tsx`.
-
-O arquivo `PLANO_SEPARACAO_NOTICIAS.txt` contém uma explicação complementar do problema e dessa abordagem.
+A expiração é verificada durante a leitura dos dados persistidos, normalmente ao iniciar ou recarregar o app. Se a página permanecer aberta durante a meia-noite, os dados que já estão na memória não são removidos naquele instante; serão verificados na próxima leitura do armazenamento. A lógica está em `src/store/ZustandNews.ts`, e a busca quando a lista está vazia está em `src/components/News.tsx`.
