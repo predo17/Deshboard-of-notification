@@ -5,6 +5,7 @@ export interface Article {
   image_url: string;
   pubDate: string;
   link: string;
+  category: string[];
   source_name: string;
   source_icon: string;
 }

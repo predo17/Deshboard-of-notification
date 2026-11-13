@@ -1,28 +1,39 @@
 import { useNewsStore } from "@/store/ZustandNews";
 import { useEffect } from "react";
 import { GoGlobe } from "react-icons/go";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import type { Article } from "@/types/ArticleType";
 
 interface Props {
   excludeArticleIds?: number[];
+  articles?: Article[];
 }
 
-export default function News({ excludeArticleIds = [] }: Props) {
-  const { news, getNews } = useNewsStore();
+export default function News({
+  excludeArticleIds = [],
+  articles: filteredArticles,
+}: Props) {
+  const { news, getNews, status } = useNewsStore();
   const allArticles = Array.isArray(news) ? news : [];
-  const articles = allArticles.filter(
+  const articlesToShow = (filteredArticles ?? allArticles).filter(
     (article) => !excludeArticleIds.includes(article.article_id),
   );
 
+  const { category } = useParams();
+
   useEffect(() => {
-    if (allArticles.length === 0) getNews();
-  }, [allArticles.length, getNews]);
+    if (allArticles.length === 0 && status === "idle") getNews();
+  }, [allArticles.length, getNews, status]);
 
   return (
     <div className="flex flex-col w-full max-w-4xl gap-5">
-      {articles.map((n) => (
+      {articlesToShow.map((n) => (
         <Link
-          to={`/details/${encodeURIComponent(n.title)}`}
+          to={
+            category
+              ? `/${encodeURIComponent(category)}/noticia/${encodeURIComponent(n.title)}`
+              : `/noticia/${encodeURIComponent(n.title)}`
+          }
           aria-label={`Abrir noticia ${n.title}`}
           key={n.article_id}
           className="flex gap-4 p-2 bg-white rounded-md shadow-md"

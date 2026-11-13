@@ -13,8 +13,10 @@ export default function HomePage() {
 
   return (
     <>
-      <Home featuredArticles={featuredArticles} />
-      <div className="w-full max-w-7xl mx-auto pl-15">
+      <div className="hidden md:block">
+        <Home featuredArticles={featuredArticles} />
+      </div>
+      <div className="w-full max-w-7xl mx-auto xl:pl-15">
         <News excludeArticleIds={featuredArticleIds} />
       </div>
     </>

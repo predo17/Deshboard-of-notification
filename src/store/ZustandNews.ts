@@ -73,7 +73,9 @@ export const useNewsStore = create<NewsState>()(
           const validNews = data.results.filter(
             (item: Article) =>
               typeof item.description === "string" &&
-              item.description.trim() !== "",
+              item.description.trim() !== "" &&
+              typeof item.image_url === "string" &&
+              item.image_url.trim() !== "",
           );
           set({
             news: validNews,

@@ -14,7 +14,7 @@ export default function Home({ featuredArticles }: Props) {
       {mainArticle && (
         <div className="grid grid-cols-[1.5fr_0.9fr] w-full max-w-6xl gap-5">
           <Link
-            to={`/details/${encodeURIComponent(mainArticle.title)}`}
+            to={`/noticia/${encodeURIComponent(mainArticle.title)}`}
             className="group relative w-full max-w-200 h-full min-h-100 overflow-hidden rounded-2xl bg-white shadow-md"
           >
             <img

@@ -1,12 +1,28 @@
-import { filter_news } from "@/utils/filter";
+import { useNewsStore } from "@/store/ZustandNews";
 import { MenuButton } from "@/utils/Help";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getCategoryLabel, toCategorySlug } from "@/utils/filter";
 
 interface props {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
 }
 export default function Sidebar({ isSidebarOpen, toggleSidebar }: props) {
+
+  const { news } = useNewsStore();
+  const categories = Array.from(
+    new Map(
+      news
+        .flatMap((article) =>
+          Array.isArray(article.category) ? article.category : [],
+        )
+        .filter((category) => typeof category === "string" && category.trim())
+        .filter((category) => toCategorySlug(category) !== "")
+        .map((category) => [toCategorySlug(category), category] as const),
+    ).values(),
+  );
+
   useEffect(() => {
     if (isSidebarOpen) {
       document.body.classList.add("overflow-hidden");
@@ -46,14 +62,15 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: props) {
         </div>
 
         <ul className="flex flex-col gap-2 p-4">
-          {filter_news.map((n, index) => (
-            <li key={index}>
-              <a
-                href={`/filter/${n}`}
+          {categories.map((category) => (
+            <li key={toCategorySlug(category)}>
+              <Link
+                to={`/${toCategorySlug(category)}`}
+                onClick={toggleSidebar}
                 className="block p-2 rounded hover:bg-gray-100 transition-colors"
               >
-                {n}
-              </a>
+                {getCategoryLabel(category)}
+              </Link>
             </li>
           ))}
         </ul>
